@@ -1,5 +1,5 @@
 # django-error-email-throttle
-Throttles the error emails that get sent via Django
+Throttles the error emails that get sent via Django. To ensure that error emails of only one error type is throttled, we generate a hash of file, function, line number and the line contents.
 
 ## Quickstart
 Add error_email_throttle to installed apps
@@ -21,3 +21,12 @@ Add error_email_throttle.handler.AdminEmailThrottler to Logging config
 }
 ```
 
+A value of 15 minutes is used as the default, i.e. emails are not triggered for the same error within the next 15 minutes. One can override this setting by adding the following to settings.py
+
+```
+ERROR_EMAIL_THROTTLING_TIME = 30
+```
+
+One could find a list of all errors and the number of times it has occured by visiting the following page in admin.
+
+```/admin/error_email_throttle/```
