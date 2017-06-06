@@ -21,8 +21,5 @@ class AdminEmailThrottler(AdminEmailHandler):
             super(AdminEmailThrottler, self).emit(record)
 
     def _can_send_email(self, reporter, record):
-        try:
-            ErrorReport = apps.get_model('error_email_throttle', 'ErrorReport')
-            return ErrorReport.objects.add_error_log(reporter, record)
-        except Exception:
-            return True
+        ErrorReport = apps.get_model('error_email_throttle', 'ErrorReport')
+        return ErrorReport.objects.add_error_log(reporter, record)
