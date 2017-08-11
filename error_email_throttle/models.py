@@ -10,9 +10,8 @@ from django.conf import settings
 
 
 def _get_error_hash(filename, lineno, function, context_line):
-    return hashlib.sha256(
-        filename + str(lineno) + function + context_line
-    ).hexdigest()
+    key = filename + str(lineno) + function + context_line
+    return hashlib.sha256(key.encode('utf8')).hexdigest()
 
 
 class ErrorReportManager(models.Manager):
