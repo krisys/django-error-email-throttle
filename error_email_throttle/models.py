@@ -32,8 +32,15 @@ class ErrorReportManager(models.Manager):
             time_diff = (timezone.now() - error_report.last_emailed)
             send_email = False
             time_diff_allowed = getattr(
-                settings, 'ERROR_EMAIL_THROTTLING_TIME', 15) * 60
-            if time_diff.total_seconds() > time_diff_allowed:
+                settings, 'ERROR_EMAIL_THROTTLING_TIME', 15)
+            email_throttling_override = getattr(
+                settings, 'ERROR_EMAIL_THROTTLING_TIME_OVERRIDE', {}
+            )
+            if record.request.path in email_throttling_override:
+                time_diff_allowed = email_throttling_override.get(
+                    record.request.path)
+
+            if time_diff.total_seconds() > time_diff_allowed * 60:
                 send_email = True
 
             error_report.update_stats(url=url, send_email=send_email)
