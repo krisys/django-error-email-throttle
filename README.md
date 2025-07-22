@@ -27,6 +27,14 @@ A value of 15 minutes is used as the default, i.e. emails are not triggered for 
 ERROR_EMAIL_THROTTLING_TIME = 30
 ```
 
+For instances where DB instance itself could be down. In such cases, error_email_throttle provides a File based fallback approach. You can enable this by adding the following to settings.py
+
+```
+ERROR_EMAIL_THROTTLING_FILE_FALLBACK = True
+```
+
+
 One could find a list of all errors and the number of times it has occured by visiting the following page in admin.
 
 ```/admin/error_email_throttle/```
+

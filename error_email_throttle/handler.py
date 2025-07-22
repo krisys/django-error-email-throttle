@@ -1,9 +1,13 @@
 import logging
+import time
+import os
+
 from django.apps import apps
 from copy import copy
 from django.conf import settings
 from django.views.debug import ExceptionReporter
 from django.utils.log import AdminEmailHandler
+from django.db.utils import OperationalError
 
 
 class AdminEmailThrottler(AdminEmailHandler):
@@ -56,5 +60,29 @@ class AdminEmailThrottler(AdminEmailHandler):
         # Disallowed host email etc may not have a stack trace to analyse.
         try:
             return ErrorReport.objects.add_error_log(reporter, record)
+        except OperationalError:
+            if getattr(settings, 'ERROR_EMAIL_THROTTLING_FILE_FALLBACK', False):
+                self.timestamp_file = os.path.join(
+                    settings.BASE_DIR, 'error_throttle_last_email_sent.txt')
+                if not os.path.exists(self.timestamp_file):
+                    self.write_last_email_sent_to_file()
+                    return True
+                else:
+                    with open(self.timestamp_file, 'r') as f:
+                        contents = f.read().strip()
+
+                    if contents:
+                        last_emailed_timestamp = float(contents)
+                        time_since = (time.time() - last_emailed_timestamp) / 60
+                        if time_since < getattr(settings, 'ERROR_EMAIL_THROTTLING_TIME', 15):
+                            return False
+
+                    self.write_last_email_sent_to_file()
+                    return True
         except Exception:
             return True
+
+    def write_last_email_sent_to_file(self):
+        with open(self.timestamp_file, 'w') as f:
+            f.write(str(time.time()))
+
